@@ -91,6 +91,9 @@ void CuptiCallbackApi::__callback_switchboard(
                    .runtime[CUDA_LAUNCH_KERNEL_EXC - __RUNTIME_CB_DOMAIN_START];
           break;
 #endif
+        case CUPTI_RUNTIME_TRACE_CBID_cudaMemcpy_v3020:
+          cblist = &callbacks_.runtime[CUDA_MEMCPY - __RUNTIME_CB_DOMAIN_START];
+          break;
         default:
           break;
       }
@@ -121,6 +124,18 @@ void CuptiCallbackApi::__callback_switchboard(
           cblist =
               &callbacks_.resource
                    [RESOURCE_CONTEXT_DESTROYED - __RESOURCE_CB_DOMAIN_START];
+          break;
+        default:
+          break;
+      }
+      break;
+
+    case CUPTI_CB_DOMAIN_DRIVER_API:
+      switch (cbid) {
+        case CUPTI_DRIVER_TRACE_CBID_cuLaunchKernel:
+          cblist =
+              &callbacks_
+                   .runtime[CUDA_DRIVER_LAUNCH_KERNEL - __RUNTIME_CB_DOMAIN_START];
           break;
         default:
           break;
@@ -199,6 +214,12 @@ CuptiCallbackApi::CallbackList* CuptiCallbackApi::CallbackTable::lookup(
       assert(cbid < __RUNTIME_CB_DOMAIN_END);
       idx = cbid - __RUNTIME_CB_DOMAIN_START;
       return &runtime.at(idx);
+
+    case CUPTI_CB_DOMAIN_DRIVER_API:
+      assert(cbid >= __DRIVER_CB_DOMAIN_START);
+      assert(cbid < __DRIVER_CB_DOMAIN_END);
+      idx = cbid - __DRIVER_CB_DOMAIN_START;
+      return &driver.at(idx);
 
     default:
       LOG(WARNING) << " Unsupported callback domain : " << domain;

@@ -50,15 +50,19 @@ class CuptiCallbackApi {
     // can possibly support more callback ids per domain
     //
     __RUNTIME_CB_DOMAIN_START = CUDA_LAUNCH_KERNEL,
-    CUDA_LAUNCH_KERNEL_EXC, // Used in H100
+    CUDA_LAUNCH_KERNEL_EXC,  // Used in H100
+    CUDA_MEMCPY,
+
+    CUDA_DRIVER_LAUNCH_KERNEL,
+    __RUNTIME_CB_DOMAIN_END = CUDA_DRIVER_LAUNCH_KERNEL,
+    __DRIVER_CB_DOMAIN_START = CUDA_DRIVER_LAUNCH_KERNEL,
 
     // Callbacks under Resource CB domain
     RESOURCE_CONTEXT_CREATED,
     RESOURCE_CONTEXT_DESTROYED,
 
-    __RUNTIME_CB_DOMAIN_END = RESOURCE_CONTEXT_CREATED,
+    __DRIVER_CB_DOMAIN_END = RESOURCE_CONTEXT_CREATED,
     __RESOURCE_CB_DOMAIN_START = RESOURCE_CONTEXT_CREATED,
-
     __RESOURCE_CB_DOMAIN_END = RESOURCE_CONTEXT_DESTROYED + 1,
   };
 
@@ -121,12 +125,16 @@ class CuptiCallbackApi {
   constexpr static size_t RUNTIME_CB_DOMAIN_SIZE =
       (__RUNTIME_CB_DOMAIN_END - __RUNTIME_CB_DOMAIN_START);
 
+  constexpr static size_t DRIVER_CB_DOMAIN_SIZE =
+      (__DRIVER_CB_DOMAIN_END - __DRIVER_CB_DOMAIN_START);
+
   constexpr static size_t RESOURCE_CB_DOMAIN_SIZE =
       (__RESOURCE_CB_DOMAIN_END - __RESOURCE_CB_DOMAIN_START);
 
   // level 1 table is a struct
   struct CallbackTable {
     std::array<CallbackList, RUNTIME_CB_DOMAIN_SIZE> runtime;
+    std::array<CallbackList, DRIVER_CB_DOMAIN_SIZE> driver;
     std::array<CallbackList, RESOURCE_CB_DOMAIN_SIZE> resource;
 
     CallbackList* lookup(CUpti_CallbackDomain domain, CuptiCallBackID cbid);
